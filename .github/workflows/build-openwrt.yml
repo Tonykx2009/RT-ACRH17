@@ -1,0 +1,31 @@
+name: Build OpenWrt for RT-ACRH17
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'configs/**', '.github/workflows/build-openwrt.yml' ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenWrt
+        uses: P3TERX/actions-openwrt@master
+        with:
+          version: v25.12.6
+          target: ipq40xx
+          profile: asus_rt-acrh17
+        env:
+          CONFIG_FILE: configs/.config
+          DIY_SCRIPT: configs/diy.sh
+          UPLOAD_RELEASE: true
+          RELEASE_NAME: "OpenWrt v25.12.6 for RT-ACRH17"
+          RELEASE_TAG: v25.12.6-rt-acrh17
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
