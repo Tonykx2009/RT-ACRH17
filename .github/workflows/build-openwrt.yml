@@ -2,9 +2,9 @@ name: Build OpenWrt for RT-ACRH17
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
-    paths: [ 'configs/**', '.github/workflows/build-openwrt.yml' ]
+ # push:
+ #   branches: [ main ]
+ #   paths: [ 'configs/**', '.github/workflows/build-openwrt.yml' ]
 
 permissions:
   contents: write
