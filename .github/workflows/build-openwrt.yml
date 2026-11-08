@@ -57,10 +57,14 @@ jobs:
           mkdir -p release
           find openwrt/bin/targets/ipq40xx/generic -maxdepth 1 -type f -name "*.bin" -exec cp {} release/ \;
           
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "ts=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+
       - name: Upload to Releases
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v25.12.6-rt-acrh17
-          name: "OpenWrt v25.12.6 for RT-ACRH17"
+          tag_name: v25.12.6-rt-acrh17-${{ steps.timestamp.outputs.ts }}
+          name: "OpenWrt v25.12.6 for RT-ACRH17 (${{ steps.timestamp.outputs.ts }})"
           files: release/*.bin
           token: ${{ secrets.GITHUB_TOKEN }}
