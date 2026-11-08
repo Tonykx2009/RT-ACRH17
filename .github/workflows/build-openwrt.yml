@@ -55,12 +55,12 @@ jobs:
       - name: Prepare release files
         run: |
           mkdir -p release
-          find openwrt/bin/targets/ipq40xx/generic -maxdepth 1 -type f \( -name "*.bin" -o -name "*.img" -o -name "*.manifest" \) -exec cp {} release/ \;
-
+          find openwrt/bin/targets/ipq40xx/generic -maxdepth 1 -type f -name "*.bin" -exec cp {} release/ \;
+          
       - name: Upload to Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v25.12.6-rt-acrh17
           name: "OpenWrt v25.12.6 for RT-ACRH17"
-          files: release/*
+          files: release/*.bin
           token: ${{ secrets.GITHUB_TOKEN }}
