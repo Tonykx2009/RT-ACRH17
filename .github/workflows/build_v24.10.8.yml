@@ -1,0 +1,78 @@
+name: Build OpenWrt for RT-ACRH17
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex bison g++ gawk \
+            gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
+            python3-distutils rsync unzip zlib1g-dev file wget
+
+      - name: Clone OpenWrt v24.10.8
+        run: |
+          git clone https://github.com/openwrt/openwrt.git --branch v24.10.8 --depth 1 openwrt
+          cd openwrt
+
+      - name: Update feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Load custom config
+        run: |
+          cp configs/.config openwrt/.config
+          cd openwrt
+          make defconfig
+
+      - name: Modify LAN IP to 192.168.50.1
+        run: |
+          cd openwrt
+          sed -i 's/192.168.1.1/192.168.50.1/g' package/base-files/files/bin/config_generate
+
+      - name: Apply DTS/Image overrides and clean
+        run: |
+          cd openwrt
+          # 执行 diy24.sh 中的修改（如果 diy24.sh 包含了上述内容）
+          bash ../configs/diy24.sh
+          # 清理旧的镜像生成配置，确保新的 SUPPORTED_DEVICES 生效
+          rm -f tmp/.image.mk
+
+      - name: Download packages
+        run: |
+          cd openwrt
+          make download -j8
+
+      - name: Build firmware
+        run: |
+          cd openwrt
+          make -j$(nproc) || make -j1 V=s
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          find openwrt/bin/targets/ipq40xx/generic -maxdepth 1 -type f -name "*.bin" -exec cp {} release/ \;
+          
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "ts=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Upload to Releases
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v24.10.8-rt-acrh17-${{ steps.timestamp.outputs.ts }}
+          name: "OpenWrt v24.10.8 for RT-ACRH17 (${{ steps.timestamp.outputs.ts }})"
+          files: release/*.bin
+          token: ${{ secrets.GITHUB_TOKEN }}
