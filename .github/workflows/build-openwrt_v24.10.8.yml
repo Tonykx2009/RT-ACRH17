@@ -1,4 +1,4 @@
-name: Build OpenWrt for RT-ACRH17
+name: Build OpenWrt24.10.8 for RT-ACRH17
 
 on:
   workflow_dispatch:
