@@ -33,7 +33,7 @@ jobs:
 
       - name: Load custom config
         run: |
-          cp configs/.config openwrt/.config
+          cp configs2/.config openwrt/.config
           cd openwrt
           make defconfig
 
